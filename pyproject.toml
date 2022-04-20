@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "robotframework-zebrunner"
-version = "0.1.0"
+version = "0.1.1"
 description = "Robotframework connector for Zebrunner reporting"
 authors = ["Anatoliy Platonov <platonoff.dev@gmail.com>"]
 license = "Apache"
@@ -27,8 +27,8 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
-robotframework = ">=4.0"
+python = ">=3.7"
+robotframework = ">=3.2.2"
 httpx = "^0.22.0"
 pydantic = ">=1.0"
 python-dotenv = ">=0.10"
