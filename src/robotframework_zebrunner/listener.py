@@ -165,9 +165,6 @@ class ZebrunnerListener:
             return
 
         if self.test_id and self.test_run_id:
-            if self.session_manager:
-                self.session_manager.remove_test(self.test_id)
-
             status = TestStatus.FAILED
             if attributes.status == "PASS":
                 status = TestStatus.PASSED
