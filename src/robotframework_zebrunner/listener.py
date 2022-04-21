@@ -1,13 +1,18 @@
+from distutils.command.build import build
 import json
 import logging
+from pprint import pformat
+import time
 from typing import List, Optional
 
 from pydantic import ValidationError
 from robot import running, result
 from robot.libraries.BuiltIn import BuiltIn
 
+from robotframework_zebrunner.logs import LogBuffer
+
 from .api.client import ZebrunnerAPI
-from .api.models import FinishTestModel, StartTestModel, StartTestRunModel, TestStatus
+from .api.models import FinishTestModel, LogRecordModel, StartTestModel, StartTestRunModel, TestStatus
 from .api.models import (
     MilestoneModel,
     NotificationTargetModel,
@@ -27,6 +32,7 @@ class ZebrunnerListener:
     test_id: Optional[int]
     settings: Optional[Settings]
     session_manager: Optional[SeleniumSessionManager]
+    log_buffer: LogBuffer
 
     def __init__(self) -> None:
         self.test_run_id = None
@@ -41,23 +47,7 @@ class ZebrunnerListener:
         server_config = self.settings.server
         self.api = ZebrunnerAPI(server_config.hostname, server_config.access_token)
         self.api.auth()
-
-    def _path_run_id(self, test_run: StartTestRunModel):
-        try:
-            builtin = BuiltIn()
-            builtin.import_library("pabot.PabotLib")
-            pabot = builtin.get_library_instance("pabot.PabotLib")
-            pabot.acquire_lock("zebrunner")
-            if pabot.get_parallel_value_for_key("ZEBRUNNER_ID"):
-                zebrunner_id = pabot.get_parallel_value_for_key("ZEBRUNNER_ID")
-                run_context = {"mode": "APPEND", "testRunUuid": zebrunner_id}
-                run_context_str = json.dumps(run_context)
-                rerun_tests = self.api.get_rerun_tests(run_context_str)
-                test_run.uuid = rerun_tests.test_run_uuid
-            else:
-                pabot.set_parallel_value_for_key("ZEBRUNNER_ID", test_run.uuid)
-        finally:
-            pabot.release_lock("zebrunner")
+        self.log_buffer = LogBuffer(self.api, self.test_run_id)
 
     def _is_pabot_enabled(self) -> bool:
         try:
@@ -71,12 +61,12 @@ class ZebrunnerListener:
             return False
 
         return False
-
-    def start_suite(self, data: running.TestSuite, result: result.TestSuite) -> None:
+    
+    def  _start_test_run(self, data: running.TestSuite) -> Optional[int]:
         if not self.settings:
-            return
+            return None
 
-        display_name = self.settings.run.display_name if self.settings.run else ""
+        display_name = self.settings.run.display_name if self.settings.run else "Default suite"
         start_run = StartTestRunModel(
             name=display_name or data.name,
             framework="robotframework",
@@ -86,15 +76,12 @@ class ZebrunnerListener:
             ),
         )
 
-        if self._is_pabot_enabled():
-            self._path_run_id(start_run)
-
         if self.settings.milestone:
             start_run.milestone = MilestoneModel(
                 id=self.settings.milestone.id,
                 name=self.settings.milestone.name,
             )
-
+        
         if self.settings.notification:
             notification = self.settings.notification
             targets: List[NotificationTargetModel] = []
@@ -128,21 +115,51 @@ class ZebrunnerListener:
             )
 
         start_run.ci_context = resolve_ci_context()
+        return self.api.start_test_run(self.settings.project_key, start_run)
 
-        self.test_run_id = self.api.start_test_run(self.settings.project_key, start_run)
-        if self.test_run_id:
-            self.session_manager = inject_driver(
-                self.settings, self.api, self.test_run_id
-            )
+
+    def start_suite(self, data: running.TestSuite, result: result.TestSuite) -> None:
+        # Skip all nonroot suites
+        if data.id != "s1":
+            return
+
+        if self._is_pabot_enabled():
+            # Lock, create run or get from variables, release lock
+            from pabot.pabotlib import PabotLib
+            builtin = BuiltIn()
+            pabot: PabotLib = builtin.get_library_instance("pabot.PabotLib")
+            pabot.acquire_lock("zebrunner")
+            try:
+                if pabot.get_parallel_value_for_key("ZEBRUNNER_TEST_RUN_ID"):
+                    self.test_run_id = pabot.get_parallel_value_for_key("ZEBRUNNER_TEST_RUN_ID")
+                else:
+                    self.test_run_id = self._start_test_run(data)
+                    pabot.set_parallel_value_for_key("ZEBRUNNER_TEST_RUN_ID", self.test_run_id)
+            finally:
+                pabot.release_lock("zebrunner")
+        else:
+            self.test_run_id = self._start_test_run(data)
+        
+        if self.settings and self.settings.send_logs and self.test_run_id:
+            self.log_buffer.test_run_id = self.test_run_id
+
+        if self.settings and self.test_run_id:
+            self.session_manager = inject_driver(self.settings, self.api, self.test_run_id)
+
 
     def end_suite(self, name: str, attributes: dict) -> None:
         if not self.settings:
             return
-
         if self.test_run_id:
-            self.api.finish_test_run(self.test_run_id)
-            if self.session_manager:
-                self.session_manager.finish_all_sessions()
+            self.log_buffer.push_logs()
+
+        builtin = BuiltIn()
+        is_pabot_last = builtin.get_variable_value("${PABOTISLASTEXECUTIONINPOOL}")
+        if is_pabot_last == "1" or is_pabot_last is None:
+            if self.test_run_id:
+                self.api.finish_test_run(self.test_run_id)
+                if self.session_manager:
+                    self.session_manager.finish_all_sessions()
 
     def start_test(self, data: running.TestCase, result: result.TestCase) -> None:
         if not self.settings:
@@ -178,6 +195,32 @@ class ZebrunnerListener:
 
             finish_test = FinishTestModel(result=status.value, reason=attributes.message)
             self.api.finish_test(self.test_run_id, self.test_id, finish_test)
+    
+    def log_message(self, message: result.Message) -> None:
+        if not self.test_run_id or not self.test_id:
+            return
+        
+        self.log_buffer.add_log(
+            LogRecordModel(
+                test_id=self.test_id, 
+                level=message.level, 
+                timestamp=str(round(time.time() * 1000)),
+                message=message.message,
+            )
+        )
+
+    def output_file(self, path: str) -> None:
+        if not self.test_run_id:
+            return
+        
+        self.api.send_artifact(path, self.test_run_id, self.test_id)
+
+    def log_file(self, path: str) -> None:
+        if not self.test_run_id:
+            return
+        
+        self.api.send_artifact(path, self.test_run_id, self.test_id)
+
 
 
 class ZebrunnerLib:
