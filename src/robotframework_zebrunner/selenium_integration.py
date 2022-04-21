@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .api.client import ZebrunnerAPI
 from .api.models import FinishTestSessionModel, StartTestSessionModel
@@ -10,13 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class SeleniumSession:
-    zebrunner_id: str
+    zebrunner_id: Optional[str]
     id: str
     tests: List[int]
 
     def __init__(self, id: str, tests: List[int]) -> None:
         self.id = id
         self.tests = tests
+        self.zebrunner_id = None
 
 
 class SeleniumSessionManager:
@@ -27,10 +28,15 @@ class SeleniumSessionManager:
         self._test_run_id = test_run_id
 
     def start_session(self, session_id: str, capabilities: dict, desired_capabilities: dict) -> None:
-        session = SeleniumSession(session_id, self._active_tests)
+        session = SeleniumSession(session_id, copy.copy(self._active_tests))
         self._active_sessions[session_id] = session
 
-        start_session_model = StartTestSessionModel(session_id=session_id, desired_capabilities=desired_capabilities, capabilities=capabilities)
+        start_session_model = StartTestSessionModel(
+            session_id=session_id, 
+            desired_capabilities=desired_capabilities, 
+            capabilities=capabilities, 
+            test_ids=session.tests
+        )
         zebrunner_session_id = self._api.start_test_session(self._test_run_id, start_session_model)
 
         if zebrunner_session_id:
@@ -38,7 +44,7 @@ class SeleniumSessionManager:
 
     def finish_session(self, session_id: str) -> None:
         session = self._active_sessions[session_id]
-        if session.zebrunner_id:
+        if session.zebrunner_id and self._test_run_id:
             finish_session_model = FinishTestSessionModel(test_ids=session.tests)
             self._api.finish_test_session(self._test_run_id, session.zebrunner_id, finish_session_model)
         del self._active_sessions[session_id]
@@ -49,6 +55,8 @@ class SeleniumSessionManager:
 
     def add_test(self, test_id: int) -> None:
         self._active_tests.append(test_id)
+        for _, session in self._active_sessions.items():
+            session.tests.append(test_id)
     
     def remove_test(self, test_id: int) -> None:
         self._active_tests.remove(test_id)

@@ -1,6 +1,6 @@
 *** Settings ***
 Library     SeleniumLibrary
-Library     robotframework_zebrunner.ZebrunnerLib
+# Library     robotframework_zebrunner.ZebrunnerLib
 # Library     pabot.PabotLib
 
 *** Test Cases ***
