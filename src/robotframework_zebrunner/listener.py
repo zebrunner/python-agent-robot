@@ -167,10 +167,10 @@ class ZebrunnerListener:
 
         if self.test_run_id:
             start_test = StartTestModel(
-                name=data.name,
-                class_name=data.longname,
-                test_case=data.longname,
-                method_name=data.name,
+                name=data.name[:255],
+                class_name=data.parent.longname[:255],
+                test_case=data.parent.longname[:255],
+                method_name=data.name[:255],
             )
             self.test_id = self.api.start_test(self.test_run_id, start_test)
 
