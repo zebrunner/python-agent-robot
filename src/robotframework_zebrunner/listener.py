@@ -74,7 +74,16 @@ class ZebrunnerListener:
                 environment=self.settings.run.environment,
                 build=self.settings.run.build,
             ),
+            ci_context=resolve_ci_context()
         )
+
+        if self.settings.run.context:
+            zebrunner_run_context = self.api.get_rerun_tests(self.settings.run.context)
+            start_run.uuid = zebrunner_run_context.test_run_uuid
+            # if not zebrunner_run_context.run_allowed:
+            #     pytest.exit(f"Run not allowed by zebrunner! Reason: {zebrunner_run_context.reason}")
+            # if zebrunner_run_context.run_only_specific_tests and not zebrunner_run_context.tests_to_run:
+            #     pytest.exit("Aborted. No tests to run!!")
 
         if self.settings.milestone:
             start_run.milestone = MilestoneModel(

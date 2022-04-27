@@ -15,6 +15,9 @@ Skipped Test Case
     [Tags]  robot:skip
     Should Be True    5 + 5 == 10
 
+Super long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long name
+    Should Be True    5 + 5 == 10
+
 Open Google Chrome
     [Tags]
     ${caps}  Evaluate  {"enableVideo": True, "enableLogs": True, "enableVNC": True, "provider": "zebrunner"}
