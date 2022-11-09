@@ -61,8 +61,8 @@ class ZebrunnerListener:
             return False
 
         return False
-    
-    def  _start_test_run(self, data: running.TestSuite) -> Optional[int]:
+
+    def _start_test_run(self, data: running.TestSuite) -> Optional[int]:
         if not self.settings:
             return None
 
@@ -90,14 +90,14 @@ class ZebrunnerListener:
                 id=self.settings.milestone.id,
                 name=self.settings.milestone.name,
             )
-        
+
         if self.settings.notification:
             notification = self.settings.notification
             targets: List[NotificationTargetModel] = []
             if notification.emails:
                 targets.append(
                     NotificationTargetModel(
-                        type=NotificationsType.EMAIL_RECIPIENTS,
+                        type=NotificationsType.EMAIL_RECIPIENTS.value,
                         value=notification.emails,
                     )
                 )
@@ -105,7 +105,7 @@ class ZebrunnerListener:
             if notification.slack_channels:
                 targets.append(
                     NotificationTargetModel(
-                        type=NotificationsType.SLACK_CHANNELS,
+                        type=NotificationsType.SLACK_CHANNELS.value,
                         value=notification.slack_channels,
                     )
                 )
@@ -113,7 +113,7 @@ class ZebrunnerListener:
             if notification.ms_teams_channels:
                 targets.append(
                     NotificationTargetModel(
-                        type=NotificationsType.MS_TEAMS_CHANNELS,
+                        type=NotificationsType.MS_TEAMS_CHANNELS.value,
                         value=notification.ms_teams_channels,
                     )
                 )
@@ -125,7 +125,6 @@ class ZebrunnerListener:
 
         start_run.ci_context = resolve_ci_context()
         return self.api.start_test_run(self.settings.project_key, start_run)
-
 
     def start_suite(self, data: running.TestSuite, result: result.TestSuite) -> None:
         # Skip all nonroot suites
@@ -148,13 +147,12 @@ class ZebrunnerListener:
                 pabot.release_lock("zebrunner")
         else:
             self.test_run_id = self._start_test_run(data)
-        
+
         if self.settings and self.settings.send_logs and self.test_run_id:
             self.log_buffer.test_run_id = self.test_run_id
 
         if self.settings and self.test_run_id:
             self.session_manager = inject_driver(self.settings, self.api, self.test_run_id)
-
 
     def end_suite(self, name: str, attributes: dict) -> None:
         if not self.settings:
@@ -204,15 +202,15 @@ class ZebrunnerListener:
 
             finish_test = FinishTestModel(result=status.value, reason=attributes.message)
             self.api.finish_test(self.test_run_id, self.test_id, finish_test)
-    
+
     def log_message(self, message: result.Message) -> None:
         if not self.test_run_id or not self.test_id:
             return
-        
+
         self.log_buffer.add_log(
             LogRecordModel(
-                test_id=self.test_id, 
-                level=message.level, 
+                test_id=self.test_id,
+                level=message.level,
                 timestamp=str(round(time.time() * 1000)),
                 message=message.message,
             )
@@ -221,15 +219,14 @@ class ZebrunnerListener:
     def output_file(self, path: str) -> None:
         if not self.test_run_id:
             return
-        
+
         self.api.send_artifact(path, self.test_run_id, self.test_id)
 
     def log_file(self, path: str) -> None:
         if not self.test_run_id:
             return
-        
-        self.api.send_artifact(path, self.test_run_id, self.test_id)
 
+        self.api.send_artifact(path, self.test_run_id, self.test_id)
 
 
 class ZebrunnerLib:
