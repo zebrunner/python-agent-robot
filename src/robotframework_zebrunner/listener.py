@@ -46,7 +46,12 @@ class ZebrunnerListener:
 
         server_config = self.settings.server
         self.api = ZebrunnerAPI(server_config.hostname, server_config.access_token)
-        self.api.auth()
+        try:
+            self.api.auth()
+        except SystemExit as e:
+            logging.error(str(e))
+            raise
+
         self.log_buffer = LogBuffer(self.api, self.test_run_id)
 
     def _is_pabot_enabled(self) -> bool:
