@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -44,7 +45,7 @@ def log_response(response: Response, log_level: int = logging.DEBUG) -> None:
         f"Headers: \n{pformat(dict(request.headers))}\n\n"
         f"Content: \n{request.content}\n\n"
         f"Response Code: {response.status_code}\n"
-        f" Content: \n{pformat(response.json())}",
+        f"Response Content: \n{pformat(response.json())}",
     )
 
 
@@ -107,7 +108,7 @@ class ZebrunnerAPI:
 
         if response.status_code != 200:
             log_response(response, logging.ERROR)
-            return
+            sys.exit("Authorization failed!")
 
         self._auth_token = response.json()["authToken"]
         self._client.auth = self._sign_request # type: ignore
