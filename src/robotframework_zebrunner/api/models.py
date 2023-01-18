@@ -9,9 +9,6 @@ from pydantic import BaseModel, Field
 def generate_uuid() -> str:
     """
     Generate an universal unique identifier.
-
-    Returns:
-         (str): Universal unique identifier (uuid).
     """
     return str(uuid4())
 
@@ -19,9 +16,6 @@ def generate_uuid() -> str:
 def generate_datetime_str() -> str:
     """
     Generate a DateTime string in ISO format.
-
-    Returns:
-        (str): DateTime in ISO format.
     """
     return (datetime.utcnow()).replace(tzinfo=timezone.utc).isoformat()
 
@@ -72,6 +66,7 @@ class CamelModel(BaseModel):
 class TestRunConfigModel(CamelModel):
     environment: Optional[str] = None
     build: Optional[str] = None
+    treat_skips_as_failures: bool = True
 
 
 class MilestoneModel(CamelModel):
@@ -154,6 +149,10 @@ class FinishTestSessionModel(CamelModel):
     test_ids: List[int] = []
 
 
+class AttachTestsToSessionModel(CamelModel):
+    test_ids: List[int] = []
+
+
 class ArtifactReferenceModel(CamelModel):
     name: str
     value: str
@@ -174,3 +173,8 @@ class RerunDataModel(CamelModel):
     reason: Optional[str]
     run_only_specific_tests: bool
     tests_to_run: List[TestModel]
+
+
+class PlatformModel(CamelModel):
+    name: str
+    version: Optional[str]
