@@ -21,12 +21,12 @@ Super long long long long long long long long long long long long long long long
 Open Google Chrome
     [Tags]
     ${caps}  Evaluate  {"enableVideo": True, "enableLogs": True, "enableVNC": True, "provider": "zebrunner"}
-    SeleniumLibrary.Open Browser    https://google.com  chrome  remote_url=https://tolik:90eaktVT97VqUOy5@engine.zebrunner.dev/wd/hub  desired_capabilities=${caps}
+    SeleniumLibrary.Open Browser    https://google.com  chrome  remote_url=https://{URL}/wd/hub  desired_capabilities=${caps}
     SeleniumLibrary.Close Browser
 
 Open Firefox
     [Tags]
     ${caps}  Evaluate  {"enableVideo": True, "enableLogs": True, "enableVNC": True, "provider": "zebrunner"}
-    SeleniumLibrary.Open Browser    https://google.com  firefox  remote_url=https://tolik:90eaktVT97VqUOy5@engine.zebrunner.dev/wd/hub  desired_capabilities=${caps}
+    SeleniumLibrary.Open Browser    https://google.com  firefox  remote_url=https://{URL}/wd/hub  desired_capabilities=${caps}
     Should Be True  2 + 2 == 5
     SeleniumLibrary.Close Browser

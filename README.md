@@ -85,7 +85,7 @@ reporting:
  would be marked as passed.
 
 If the required configurations are not provided, there is a warning displayed in logs with the problem description and the names of options
-which need to be specified. Parameter names are case insensitive and can be written in upper and lower registers.
+which need to be specified. Parameter names are case-insensitive and can be written in upper and lower registers.
 
 <!-- groups:end -->
 
@@ -94,8 +94,12 @@ which need to be specified. Parameter names are case insensitive and can be writ
 There is two options for activation of Zebrunner listener.
 
 Command line argument:
-```bash
-robot --listener robotframework_zebrunner.ZebrunnerListener ...
+```
+robot --listener robotframework_zebrunner.ZebrunnerListener
+```
+Import Zebrunner library into your project:
+```
+Library  robotframework_zebrunner.ZebrunnerLib
 ```
 
 
@@ -139,7 +143,7 @@ In some cases, it may be useful to attach some meta information related to a tes
 Label is a key-value pair associated with a test. The key and value are represented by a `str`. Labels can be attached to
 tests and test runs.
 
-There is a tag that can be used to attach labels to a test. There is also a API to attach labels during test or execution.
+There is a tag that can be used to attach labels to a test. There is also an API to attach labels during test or execution.
 The agent has functions that can be used to attach labels.
 ```
 *** Settings ***

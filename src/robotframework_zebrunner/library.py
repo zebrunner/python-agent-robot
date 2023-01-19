@@ -1,16 +1,22 @@
 import logging
+import sys
 from pathlib import Path
 from typing import Optional, Union
-from src.robotframework_zebrunner.api.client import ZebrunnerAPI
-from src.robotframework_zebrunner.api.models import ArtifactReferenceModel, LabelModel, PlatformModel
-from src.robotframework_zebrunner.context import zebrunner_context
-from src.robotframework_zebrunner.errors import AgentApiError, AgentError
-from src.robotframework_zebrunner.tcm.test_rail import TestRail
-from src.robotframework_zebrunner.tcm.xray import Xray
-from src.robotframework_zebrunner.tcm.zephyr import Zephyr
+from .api.client import ZebrunnerAPI
+from .api.models import ArtifactReferenceModel, LabelModel, PlatformModel
+from .context import zebrunner_context
+from .errors import AgentApiError, AgentError
+from .tcm.test_rail import TestRail
+from .tcm.xray import Xray
+from .tcm.zephyr import Zephyr
+
+from .listener import ZebrunnerListener
 
 
 class ZebrunnerLib:
+    if not ("robotframework_zebrunner.ZebrunnerListener" in sys.argv):
+        ROBOT_LIBRARY_LISTENER = ZebrunnerListener()
+
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
     def attach_test_screenshot(self, path: Union[str, Path]) -> None:

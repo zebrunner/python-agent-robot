@@ -1,3 +1,5 @@
+import logging
+import os
 import sys
 import time
 from datetime import datetime
@@ -37,9 +39,10 @@ class ZebrunnerListener:
         )
         try:
             self.api.auth()
-        except AgentApiError:
-            sys.exit()
-
+        except AgentApiError as e:
+            logging.error(str(e))
+            sys.exit(os.EX_CONFIG)
+    
     def _pabotlib(self):
         if self._is_pabot_enabled():
             builtin = BuiltIn()
@@ -56,7 +59,7 @@ class ZebrunnerListener:
             for key in builtin.get_variables(True):
                 if key.startswith("PABOT"):
                     return True
-        except RuntimeError:
+        except RuntimeError as e:
             return False
 
         return False

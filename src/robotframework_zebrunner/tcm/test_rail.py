@@ -1,4 +1,4 @@
-from src.robotframework_zebrunner.tcm.base import BaseTcm
+from .base import BaseTcm
 
 
 class TestRail(BaseTcm):

@@ -1,5 +1,3 @@
-
-
 from datetime import datetime, timedelta
 import logging
 from typing import List, Optional

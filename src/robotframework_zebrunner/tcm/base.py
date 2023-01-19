@@ -1,8 +1,8 @@
 import logging
 
-from src.robotframework_zebrunner.api.client import ZebrunnerAPI
-from src.robotframework_zebrunner.api.models import LabelModel
-from src.robotframework_zebrunner.context import zebrunner_context
+from ..api.client import ZebrunnerAPI
+from ..api.models import LabelModel
+from ..context import zebrunner_context
 
 
 class AgentException(Exception):

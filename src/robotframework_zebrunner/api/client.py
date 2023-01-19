@@ -9,7 +9,7 @@ from typing import List, Optional, Union
 import httpx
 from httpx import Client, Request, Response
 
-from src.robotframework_zebrunner.api.models import (
+from .models import (
     ArtifactReferenceModel,
     AttachTestsToSessionModel,
     FinishTestModel,
@@ -22,8 +22,8 @@ from src.robotframework_zebrunner.api.models import (
     StartTestRunModel,
     StartTestSessionModel,
 )
-from src.robotframework_zebrunner.errors import AgentApiError
-from src.robotframework_zebrunner.utils import Singleton
+from ..errors import AgentApiError
+from ..utils import Singleton
 
 logger = logging.getLogger(__name__)
 

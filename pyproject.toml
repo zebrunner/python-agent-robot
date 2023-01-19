@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "robotframework-zebrunner"
-version = "0.3.2"
+version = "0.3.1"
 description = "Robotframework connector for Zebrunner reporting"
 authors = ["Anatoliy Platonov <platonoff.dev@gmail.com>"]
 license = "Apache"
