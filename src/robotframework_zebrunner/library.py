@@ -2,15 +2,15 @@ import logging
 import sys
 from pathlib import Path
 from typing import Optional, Union
+
 from .api.client import ZebrunnerAPI
 from .api.models import ArtifactReferenceModel, LabelModel, PlatformModel
 from .context import zebrunner_context
 from .errors import AgentApiError, AgentError
+from .listener import ZebrunnerListener
 from .tcm.test_rail import TestRail
 from .tcm.xray import Xray
 from .tcm.zephyr import Zephyr
-
-from .listener import ZebrunnerListener
 
 
 class ZebrunnerLib:
