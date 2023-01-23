@@ -14,30 +14,19 @@ logger = logging.getLogger(__name__)
 
 
 class TestRunSettings(BaseModel):
-    """
-    A class that inherit from BaseModel and represents test_run settings.
-    """
-
     display_name: Optional[str] = None
     build: Optional[str] = None
     environment: Optional[str] = None
     context: Optional[str] = None
+    treat_skips_as_failures: bool = True
 
 
 class ServerSettings(BaseModel):
-    """
-    A class that inherit from BaseModel and represents server settings.
-    """
-
     hostname: str
     access_token: str
 
 
 class NotificationsSettings(BaseModel):
-    """
-    A class that inherit from BaseModel and represents notifications settings.
-    """
-
     slack_channels: Optional[str] = None
     ms_teams_channels: Optional[str] = None
     emails: Optional[str] = None
@@ -45,19 +34,11 @@ class NotificationsSettings(BaseModel):
 
 
 class MilestoneSettings(BaseModel):
-    """
-    A class that inherit from BaseModel and represents milestone settings.
-    """
-
     id: Optional[str]
     name: Optional[str]
 
 
 class ZebrunnerSettings(BaseModel):
-    """
-    Zebrunner settings provided by launcher
-    """
-
     @property
     def desired_capabilities(self) -> Optional[dict]:
         try:
@@ -71,13 +52,10 @@ class ZebrunnerSettings(BaseModel):
 
 
 class Settings(BaseModel):
-    """
-    A class that inherit from BaseModel and represents some settings.
-    """
-
     enabled: bool = True
     project_key: str = "DEF"
     send_logs: bool = True
+    save_test_run: bool = False
     server: ServerSettings
     run: TestRunSettings = TestRunSettings()
     notification: Optional[NotificationsSettings] = None
@@ -89,12 +67,6 @@ def _list_settings(model: Type[BaseModel]) -> List:
     """
     Extracts and returns a list with all model fields. Also goes deeper into fields that extend from BaseModel and
     extract theirs fields too.
-
-    Args:
-        model (Type[BaseModel]): A model to list its fields.
-
-    Returns:
-        setting_names (list): List with all model fields.
     """
     setting_names = []
     for field_name, field_value in model.__fields__.items():
@@ -114,11 +86,6 @@ def _put_by_path(settings_dict: dict, path: List[str], value: Any) -> None:
     Creates a dictionary with the first item in path as key and set value as its value if the amount of
     items in path is one.
     Otherwise, creates a set of nested dictionaries, with the first item in path at the top of the head.
-
-    Args:
-        settings_dict (dict): Dictionary with settings fields.
-        path (List[str]): Strings to be set as dictionary keys.
-        value: Some value to be set to las dictionary key.
     """
     if len(path) == 1:
         settings_dict[path[0]] = value
@@ -132,11 +99,6 @@ def _get_by_path(settings_dict: dict, path: List[str], default_value: Any = None
     """
     Returns the value of first path item key if path list has only one element.
     Otherwise, returns values of every key in path list recursively.
-
-    Args:
-        settings_dict (dict):
-        path (List[str]):
-        default_value (optional):
     """
     if len(path) == 1:
         return settings_dict.get(path[0], default_value)
@@ -146,7 +108,6 @@ def _get_by_path(settings_dict: dict, path: List[str], default_value: Any = None
 
 
 def _load_env(path_list: List[List[str]]) -> dict:
-    """"""
     dotenv.load_dotenv(".env")
     settings: Dict[str, Any] = {}
     for path in path_list:

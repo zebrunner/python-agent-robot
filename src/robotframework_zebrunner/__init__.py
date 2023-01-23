@@ -1,2 +1,2 @@
+from .library import ZebrunnerLib
 from .listener import ZebrunnerListener
-from .listener import ZebrunnerLib
