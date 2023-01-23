@@ -18,6 +18,7 @@ class TestRunSettings(BaseModel):
     build: Optional[str] = None
     environment: Optional[str] = None
     context: Optional[str] = None
+    treat_skips_as_failures: bool = True
 
 
 class ServerSettings(BaseModel):

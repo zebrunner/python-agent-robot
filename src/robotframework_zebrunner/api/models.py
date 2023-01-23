@@ -66,7 +66,7 @@ class CamelModel(BaseModel):
 class TestRunConfigModel(CamelModel):
     environment: Optional[str] = None
     build: Optional[str] = None
-    treat_skips_as_failures: bool = True
+    treat_skips_as_failures: bool
 
 
 class MilestoneModel(CamelModel):

@@ -63,7 +63,7 @@ reporting:
     ms-teams-channels: automation, qa-team
     emails: example@example.com
   run:
-    treat_skips_as_failures: false
+    treat-skips-as-failures: false
     display-name: Nightly Regression Suite
     build: 1.12.1.96-SNAPSHOT
     environment: TEST-1

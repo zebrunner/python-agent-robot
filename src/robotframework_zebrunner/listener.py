@@ -78,6 +78,7 @@ class ZebrunnerListener:
             config=TestRunConfigModel(
                 environment=settings.run.environment,
                 build=settings.run.build,
+                treat_skips_as_failures=settings.run.treat_skips_as_failures,
             ),
             ci_context=resolve_ci_context(),
         )
