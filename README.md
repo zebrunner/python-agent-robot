@@ -6,6 +6,12 @@ and adding the configuration file.
 
 Including reporting into your project is easy - just install the agent and provide minimal valid configuration for reporting.
 
+Feel free to support the development with a [**donation**](https://www.paypal.com/donate/?hosted_button_id=MNHYYCYHAKUVA) for the next improvements.
+
+<p align="center">
+  <a href="https://zebrunner.com/"><img alt="Zebrunner" src="https://github.com/zebrunner/zebrunner/raw/master/docs/img/zebrunner_intro.png"></a>
+</p>
+
 
 ## Installation
 
